@@ -64,6 +64,8 @@ directive
     | stringList
     | numberRanges
     | properties
+    | BYTE_SIZE
+    | TIME_DURATION
   )*?
   ;
 
@@ -167,6 +169,11 @@ bool
  : Bool
  ;
 
+BYTE_SIZE : DIGIT+ ('.' DIGIT+)? [kKmMgG]? [bB] ;
+
+TIME_DURATION : DIGIT+ ('.' DIGIT+)? ([mM]?[sS] | [sS] | [nN][sS]) ;
+
+
 condition
  : OBrace (~CBrace | condition)* CBrace
  ;
@@ -182,6 +189,8 @@ colList
 numberList
  : Number (',' Number)+
  ;
+
+DIGIT : [0-9] ;
 
 boolList
  : Bool (',' Bool)+

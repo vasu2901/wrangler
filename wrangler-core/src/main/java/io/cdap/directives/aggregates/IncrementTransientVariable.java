@@ -44,7 +44,7 @@ import java.util.List;
 import static io.cdap.wrangler.metrics.JexlCategoryMetricUtils.getJexlCategoryMetric;
 
 /**
- * A directive for incrementing the a transient variable based on conditions.
+ * A directive for incrementing the transient variable based on conditions.
  */
 @Plugin(type = Directive.TYPE)
 @Name(IncrementTransientVariable.NAME)

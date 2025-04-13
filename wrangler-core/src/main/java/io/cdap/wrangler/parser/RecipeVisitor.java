@@ -84,6 +84,22 @@ public final class RecipeVisitor extends DirectivesBaseVisitor<RecipeSymbol.Buil
   @Override
   public RecipeSymbol.Builder visitDirective(DirectivesParser.DirectiveContext ctx) {
     builder.createTokenGroup(getOriginalSource(ctx));
+    for (ParseTree child : ctx.children) {
+      if (child instanceof TerminalNode) {
+        TerminalNode node = (TerminalNode) child;
+        int tokenType = node.getSymbol().getType();
+        String text = node.getText();
+
+        switch (tokenType) {
+          case DirectivesLexer.BYTE_SIZE:
+            builder.addToken(new io.cdap.wrangler.api.parser.ByteSize(text));
+            break;
+          case DirectivesLexer.TIME_DURATION:
+            builder.addToken(new io.cdap.wrangler.api.parser.TimeDuration(text));
+            break;
+        }
+      }
+    }
     return super.visitDirective(ctx);
   }
 
