@@ -15,24 +15,29 @@
 
 package io.cdap.directives.aggregates;
 
+import io.cdap.wrangler.TestingRig;
+import io.cdap.wrangler.api.Row;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.List;
 
-
-import org.junit.Test;
-import org.junit.Assert;
-
-
-import io.cdap.wrangler.api.Row;
-import io.cdap.wrangler.TestingRig;
+/**
+ * Tests {@link AggregateStatsTest}
+ */
 
 public class AggregateStatsTest {
 
     @Test
     public void testAggregateStatsDirective() throws Exception {
+        // Input with mixed units
         List<Row> input = Arrays.asList(
-                new Row("data_transfer_size", "10KB").add("response_time", "150ms"),
-                new Row("data_transfer_size", "1.5MB").add("response_time", "2.1s")
+                new Row("data_transfer_size", "10KB").add("response_time", "150ms"),   // ~0.0095 MB, 0.15 sec
+                new Row("data_transfer_size", "1.5MB").add("response_time", "2.1s"),   // 1.5 MB, 2.1 sec
+                new Row("data_transfer_size", "0").add("response_time", "0ms"),        // Edge case: zero
+                new Row("data_transfer_size", "512B").add("response_time", "500us")    // ~0.000000488 MB, 0.0005 sec
         );
 
         String[] recipe = new String[]{
@@ -41,21 +46,24 @@ public class AggregateStatsTest {
 
         List<Row> results = TestingRig.execute(recipe, input);
 
-        Assert.assertEquals(2, results.size());
+        // Expect a single row with total aggregates
+        Assert.assertEquals(1, results.size());
+        Row aggregated = results.get(0);
 
-        Row row1 = results.get(0);
-        Row row2 = results.get(1);
+        // Calculate expected total size in MB
+        double totalBytes = (10 * 1024) + // 10KB
+                (1.5 * 1024 * 1024) + // 1.5MB
+                0 + // 0B
+                512; // 512B
+        double expectedTotalMB = totalBytes / (1024.0 * 1024.0); // using binary MB
 
-        double expectedMB1 = 10 * 1024 / (1024.0 * 1024.0); // ~0.0095 MB
-        double expectedMB2 = 1.5; // MB already
+        // Calculate expected total time in seconds
+        double expectedTotalSec = 0.150 + 2.1 + 0.0 + 0.0005;
 
-        double expectedSec1 = 0.150;
-        double expectedSec2 = 2.1;
-
-        Assert.assertEquals(expectedMB1, (Double) row1.getValue("total_size_mb"), 0.001);
-        Assert.assertEquals(expectedSec1, (Double) row1.getValue("total_time_sec"), 0.001);
-        Assert.assertEquals(expectedMB2, (Double) row2.getValue("total_size_mb"), 0.001);
-        Assert.assertEquals(expectedSec2, (Double) row2.getValue("total_time_sec"), 0.001);
+        Assert.assertEquals(expectedTotalMB,
+                (Double) aggregated.getValue("total_size_mb"), 0.001);
+        Assert.assertEquals(expectedTotalSec,
+                (Double) aggregated.getValue("total_time_sec"), 0.001);
     }
 }
 

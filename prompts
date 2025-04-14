@@ -1,0 +1,23 @@
+1. Test Case Specification Prompt
+
+
+ Test Case Specification: Aggregation
+ ● Input Data: Create a list of Row objects or parse a simple file representing sample log or transaction data.
+ ● Recipe:
+ String[] recipe = new String[] {
+ "aggregate-stats :data_transfer_size :response_time total_size_mb total_time_sec"
+ };
+ ● Execution: Use TestingRig.execute(recipe, rows)
+ ● Expected Output: Assert that the output contains a single row with correctly calculated aggregate values...
+ (This defined the main testing behavior you wanted to implement)
+
+2. Initial Code Submission Prompt
+
+
+ (You shared Java code for AggregateStatsTest, which tested row-by-row instead of true aggregation)
+
+
+
+
+
+
